@@ -15,4 +15,4 @@ J-Dis uses the follwing packages:
 - Gtk.shortnames
 <br><br>
 ## Milestones
-- Hide .txt files in .png files (05/09/2020)
+- Hide .txt files in .png files, decode .png files and output .txt (05/09/2020)
