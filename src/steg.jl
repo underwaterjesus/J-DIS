@@ -1,10 +1,10 @@
 using Images, FileIO, Printf, ArgMacros, Suppressor
 
 @suppress begin
-    using ImageView, Gtk.ShortNames           #suppress Gtk warnings on Windows machines
+    using ImageView, Gtk.ShortNames             #suppress Gtk warnings on Windows machines
 end
 
-function pretty_print(x)
+function pretty_print(x)                        #for nicer testing/debug array printing
 
     if(ndims(x) == 2)
         for i in 1:size(x)[1]
@@ -151,6 +151,64 @@ end
 
 function decode(args::Dict)
 
+    if( !( isfile(args["in_file"]) ) )
+        println("NO EXIST") ## TODO: real error message
+        exit(0)
+    end
+
+    img = load( File(format"PNG", args["in_file"]) )
+    n = size(img)[1]
+    m = size(img)[2]
+
+    pretty_print(img)
+
+    expanded_img = Array{UInt8,1}(undef, 3(n * m))
+
+    for i in 1:n
+        for j in 1:m
+
+            global t = ( ((i - 1) * n) + j )
+
+            expanded_img[t * 3] = reinterpret( UInt8, img[i, j].b )
+            expanded_img[(t * 3) - 1] = reinterpret( UInt8, img[i, j].g )
+            expanded_img[(t * 3) - 2] = reinterpret( UInt8, img[i, j].r )
+
+        end
+    end
+
+    chars = zeros(UInt8, length(expanded_img) ÷ 4)
+
+    pretty_print(chars)
+
+    for i in 1:length(chars)
+
+        x::UInt8 = 0
+
+        x |= expanded_img[i * 4] & 0x03
+        x |= (expanded_img[(i * 4) - 1] & 0x03) << 2
+        x |= (expanded_img[(i * 4) - 2] & 0x03) << 4
+        x |= (expanded_img[(i * 4) - 3] & 0x03) << 6
+
+        chars[i] = x
+
+    end
+
+    pretty_print(chars)
+
+    if( args["out_file"] == nothing )
+        for i in 1:length(chars)
+            @printf("%c", chars[i])
+        end
+        println()
+    else
+        save_file = open(args["out_file"], "w+")
+        seek(save_file, 0)
+        for i in 1:length(chars)
+            write(save_file, Char(chars[i]))
+        end
+        println()
+    end
+
 end
 
 function parse_args()#::Dict{Symbol,Any}
@@ -191,7 +249,7 @@ end
 flags = parse_args()
 
 if(!( validate_args(flags) ))
-    #TODO: error message
+    println("INVALID OPTIONS") #TODO: better error message
     exit(0)
 end
 
