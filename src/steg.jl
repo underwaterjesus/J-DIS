@@ -54,7 +54,7 @@ function encode(args::Dict)
     for i in 1:n
         for j in 1:m
 
-            global t = ( ((i - 1) * n) + j )
+            global t = ( ((i - 1) * m) + j )
 
             expanded_img[t * 3] = reinterpret( UInt8, img[i, j].b )
             expanded_img[(t * 3) - 1] = reinterpret( UInt8, img[i, j].g )
@@ -167,7 +167,7 @@ function decode(args::Dict)
     for i in 1:n
         for j in 1:m
 
-            global t = ( ((i - 1) * n) + j )
+            global t = ( ((i - 1) * m) + j )
 
             expanded_img[t * 3] = reinterpret( UInt8, img[i, j].b )
             expanded_img[(t * 3) - 1] = reinterpret( UInt8, img[i, j].g )
