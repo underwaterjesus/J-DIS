@@ -39,7 +39,7 @@ function encode(args::Dict)
     n = size(img)[1]
     m = size(img)[2]
 
-    if( filesize(doc) * 4 > 3(n * m) )
+    if( filesize(doc) * 16 > 3(n * m) )
         println("TOO BIG") ## TODO: real error message
         exit(0)
     end
@@ -47,7 +47,7 @@ function encode(args::Dict)
     seek(doc, 0)
     
 
-    pretty_print(img)
+    #pretty_print(img)
 
     expanded_img = Array{UInt8,1}(undef, 3(n * m))
 
@@ -67,37 +67,64 @@ function encode(args::Dict)
         expanded_img[i] = expanded_img[i] & 0xfc    # clear 2 LSBs
     end                                             ###############
 
-    pretty_print(expanded_img)
+    #pretty_print(expanded_img)
 
-    chars = Array{UInt8,1}(undef, filesize(doc))
+    chars = Array{UInt32,1}(undef, filesize(doc))
     i = 0
     while(!(eof(doc)))
         i += 1
         global chr = read(doc, Char)
-        chars[i] = UInt8(chr)
+        chars[i] = UInt32(chr)
     end
 
-    pretty_print(chars)
+    #pretty_print(chars)
 
+    #=
     a::UInt8  = 0x00
     b::UInt8  = 0x00
     c::UInt8  = 0x00
     d::UInt8  = 0x00
+    =#
 
     for i in 1:length(chars)
 
-        a = chars[i] & 0x03
-        b = (chars[i] >> 2) & 0x03
-        c = (chars[i] >> 4) & 0x03
-        d = (chars[i] >> 6) & 0x03
+        a = UInt8( chars[i] & 0x03 )
+        b = UInt8( (chars[i] >> 2) & 0x03 )
+        c = UInt8( (chars[i] >> 4) & 0x03 )
+        d = UInt8( (chars[i] >> 6) & 0x03 )
+        e = UInt8( (chars[i] >> 8) & 0x03 )
+        f = UInt8( (chars[i] >> 10) & 0x03 )
+        g = UInt8( (chars[i] >> 12) & 0x03 )
+        h = UInt8( (chars[i] >> 14) & 0x03 )
+        i_ = UInt8( (chars[i] >> 16) & 0x03 )
+        j = UInt8( (chars[i] >> 18) & 0x03 )
+        k = UInt8( (chars[i] >> 20) & 0x03 )
+        l = UInt8( (chars[i] >> 22) & 0x03 )
+        m_ = UInt8( (chars[i] >> 24) & 0x03 )
+        n_ = UInt8( (chars[i] >> 26) & 0x03 )
+        o = UInt8( (chars[i] >> 28) & 0x03 )
+        p = UInt8( (chars[i] >> 30) & 0x03 )
 
-        expanded_img[i*4] = expanded_img[i*4] | a
-        expanded_img[i*4-1] = expanded_img[i*4-1] | b
-        expanded_img[i*4-2] = expanded_img[i*4-2] | c
-        expanded_img[i*4-3] = expanded_img[i*4-3] | d
+        expanded_img[i*16] = expanded_img[i*16] | a
+        expanded_img[i*16-1] = expanded_img[i*16-1] | b
+        expanded_img[i*16-2] = expanded_img[i*16-2] | c
+        expanded_img[i*16-3] = expanded_img[i*16-3] | d
+        expanded_img[i*16-4] = expanded_img[i*16-4] | e
+        expanded_img[i*16-5] = expanded_img[i*16-5] | f
+        expanded_img[i*16-6] = expanded_img[i*16-6] | g
+        expanded_img[i*16-7] = expanded_img[i*16-7] | h
+        expanded_img[i*16-8] = expanded_img[i*16-8] | i_
+        expanded_img[i*16-9] = expanded_img[i*16-9] | j
+        expanded_img[i*16-10] = expanded_img[i*16-10] | k
+        expanded_img[i*16-11] = expanded_img[i*16-11] | l
+        expanded_img[i*16-12] = expanded_img[i*16-12] | m_
+        expanded_img[i*16-10] = expanded_img[i*16-10] | n_
+        expanded_img[i*16-11] = expanded_img[i*16-11] | o
+        expanded_img[i*16-12] = expanded_img[i*16-12] | p
+
     end
 
-    pretty_print(expanded_img)
+    #pretty_print(expanded_img)
 
     irgb = Array{RGB{N0f8},1}(undef, n * m)
     red = UInt8(0)
@@ -118,18 +145,18 @@ function encode(args::Dict)
         end
     end
 
-    pretty_print(irgb)
+    #pretty_print(irgb)
 
     out = Array{RGB{N0f8},2}(undef, n, m)
 
     for i in 1:n
         for j in 1:m
             x = ( (i - 1) * m ) + j
-            out[i, j] = RGB(irgb[x].r, irgb[x].g, irgb[x].b); @printf("i:%d - j:%d - x:%d\n", i, j, x);
+            out[i, j] = RGB(irgb[x].r, irgb[x].g, irgb[x].b); #@printf("i:%d - j:%d - x:%d\n", i, j, x);
         end
     end
 
-    pretty_print(out)
+    #pretty_print(out)
 
     if( args["out_file"] == nothing )
         guidict = imshow(out)
@@ -160,7 +187,7 @@ function decode(args::Dict)
     n = size(img)[1]
     m = size(img)[2]
 
-    pretty_print(img)
+    #pretty_print(img)
 
     expanded_img = Array{UInt8,1}(undef, 3(n * m))
 
@@ -176,28 +203,40 @@ function decode(args::Dict)
         end
     end
 
-    chars = zeros(UInt8, length(expanded_img) ÷ 4)
+    chars = zeros(UInt32, length(expanded_img) ÷ 16)
 
-    pretty_print(chars)
+    #pretty_print(chars)
 
     for i in 1:length(chars)
 
-        x::UInt8 = 0
+        x = UInt32(0)
 
-        x |= expanded_img[i * 4] & 0x03
-        x |= (expanded_img[(i * 4) - 1] & 0x03) << 2
-        x |= (expanded_img[(i * 4) - 2] & 0x03) << 4
-        x |= (expanded_img[(i * 4) - 3] & 0x03) << 6
+        x |= ( UInt32( expanded_img[i * 16] ) ) & 0x03 
+        x |= ( UInt32( expanded_img[(i * 16) - 1] ) & 0x03 ) << 2
+        x |= ( UInt32( expanded_img[(i * 16) - 2] ) & 0x03 ) << 4
+        x |= ( UInt32( expanded_img[(i * 16) - 3] ) & 0x03 ) << 6
+        x |= ( UInt32( expanded_img[(i * 16) - 4] ) & 0x03 ) << 8
+        x |= ( UInt32( expanded_img[(i * 16) - 5] ) & 0x03 ) << 10
+        x |= ( UInt32( expanded_img[(i * 16) - 6] ) & 0x03 ) << 12
+        x |= ( UInt32( expanded_img[(i * 16) - 7] ) & 0x03 ) << 14
+        x |= ( UInt32( expanded_img[(i * 16) - 8] ) & 0x03 ) << 16
+        x |= ( UInt32( expanded_img[(i * 16) - 9] ) & 0x03 ) << 18
+        x |= ( UInt32( expanded_img[(i * 16) - 10] ) & 0x03 ) << 20
+        x |= ( UInt32( expanded_img[(i * 16) - 11] ) & 0x03 ) << 22
+        x |= ( UInt32( expanded_img[(i * 16) - 12] ) & 0x03 ) << 24
+        x |= ( UInt32( expanded_img[(i * 16) - 13] ) & 0x03 ) << 26
+        x |= ( UInt32( expanded_img[(i * 16) - 14] ) & 0x03 ) << 28
+        x |= ( UInt32( expanded_img[(i * 16) - 15] ) & 0x03 ) << 30
 
         chars[i] = x
 
     end
 
-    pretty_print(chars)
+    #pretty_print(chars)
 
     if( args["out_file"] == nothing )
         for i in 1:length(chars)
-            @printf("%c", chars[i])
+            print(Char(chars[i]))
         end
         println()
     else
@@ -206,6 +245,7 @@ function decode(args::Dict)
         for i in 1:length(chars)
             write(save_file, Char(chars[i]))
         end
+        flush(save_file)
         println()
     end
 
