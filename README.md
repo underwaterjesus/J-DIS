@@ -16,3 +16,4 @@ J-Dis uses the follwing packages:
 <br><br>
 ## Milestones
 - Hide .txt files in .png files, decode .png files and output .txt (05/09/2020)
+- Application supports Unicode encoding/decoding (06/09/2020)
