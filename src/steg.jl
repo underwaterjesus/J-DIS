@@ -39,7 +39,8 @@ function encode(args::Dict)
     n = size(img)[1]
     m = size(img)[2]
 
-    if( filesize(doc) * 16 > 3(n * m) )
+    f_size = filesize(doc)
+    if( f_size * 16 > ( (3(n * m)) - 16) )
         println("TOO BIG") ## TODO: real error message
         exit(0)
     end
@@ -69,14 +70,14 @@ function encode(args::Dict)
 
     #pretty_print(expanded_img)
 
-    chars = Array{UInt32,1}(undef, filesize(doc))
-    i = 0
+    chars = Array{UInt32,1}(undef, filesize(doc) + 16)
+    num_chars = UInt32(0)
     while(!(eof(doc)))
-        i += 1
+        num_chars += 1
         global chr = read(doc, Char)
-        chars[i] = UInt32(chr)
+        chars[num_chars] = UInt32(chr)
     end
-
+    println(num_chars)
     #pretty_print(chars)
 
     #=
@@ -86,24 +87,41 @@ function encode(args::Dict)
     d::UInt8  = 0x00
     =#
 
-    for i in 1:length(chars)
+    expanded_img[16] |= UInt8( num_chars & 0x03)
+    expanded_img[15] |= UInt8( (num_chars >> 2) & 0x03)
+    expanded_img[14] |= UInt8( (num_chars >> 4) & 0x03)
+    expanded_img[13] |= UInt8( (num_chars >> 6) & 0x03)
+    expanded_img[12] |= UInt8( (num_chars >> 8) & 0x03)
+    expanded_img[11] |= UInt8( (num_chars >> 10) & 0x03)
+    expanded_img[10] |= UInt8( (num_chars >> 12) & 0x03)
+    expanded_img[9] |= UInt8( (num_chars >> 14) & 0x03)
+    expanded_img[8] |= UInt8( (num_chars >> 16) & 0x03)
+    expanded_img[7] |= UInt8( (num_chars >> 18) & 0x03)
+    expanded_img[6] |= UInt8( (num_chars >> 20) & 0x03)
+    expanded_img[5] |= UInt8( (num_chars >> 22) & 0x03)
+    expanded_img[4] |= UInt8( (num_chars >> 24) & 0x03)
+    expanded_img[3] |= UInt8( (num_chars >> 26) & 0x03)
+    expanded_img[2] |= UInt8( (num_chars >> 28) & 0x03)
+    expanded_img[1] |= UInt8( (num_chars >> 30) & 0x03)
 
-        a = UInt8( chars[i] & 0x03 )
-        b = UInt8( (chars[i] >> 2) & 0x03 )
-        c = UInt8( (chars[i] >> 4) & 0x03 )
-        d = UInt8( (chars[i] >> 6) & 0x03 )
-        e = UInt8( (chars[i] >> 8) & 0x03 )
-        f = UInt8( (chars[i] >> 10) & 0x03 )
-        g = UInt8( (chars[i] >> 12) & 0x03 )
-        h = UInt8( (chars[i] >> 14) & 0x03 )
-        i_ = UInt8( (chars[i] >> 16) & 0x03 )
-        j = UInt8( (chars[i] >> 18) & 0x03 )
-        k = UInt8( (chars[i] >> 20) & 0x03 )
-        l = UInt8( (chars[i] >> 22) & 0x03 )
-        m_ = UInt8( (chars[i] >> 24) & 0x03 )
-        n_ = UInt8( (chars[i] >> 26) & 0x03 )
-        o = UInt8( (chars[i] >> 28) & 0x03 )
-        p = UInt8( (chars[i] >> 30) & 0x03 )
+    for i in 2:length(chars) + 1
+
+        a = UInt8( chars[i - 1] & 0x03 )
+        b = UInt8( (chars[i - 1] >> 2) & 0x03 )
+        c = UInt8( (chars[i - 1] >> 4) & 0x03 )
+        d = UInt8( (chars[i - 1] >> 6) & 0x03 )
+        e = UInt8( (chars[i - 1] >> 8) & 0x03 )
+        f = UInt8( (chars[i - 1] >> 10) & 0x03 )
+        g = UInt8( (chars[i - 1] >> 12) & 0x03 )
+        h = UInt8( (chars[i - 1] >> 14) & 0x03 )
+        i_ = UInt8( (chars[i - 1] >> 16) & 0x03 )
+        j = UInt8( (chars[i - 1] >> 18) & 0x03 )
+        k = UInt8( (chars[i - 1] >> 20) & 0x03 )
+        l = UInt8( (chars[i - 1] >> 22) & 0x03 )
+        m_ = UInt8( (chars[i - 1] >> 24) & 0x03 )
+        n_ = UInt8( (chars[i - 1] >> 26) & 0x03 )
+        o = UInt8( (chars[i - 1] >> 28) & 0x03 )
+        p = UInt8( (chars[i - 1] >> 30) & 0x03 )
 
         expanded_img[i*16] = expanded_img[i*16] | a
         expanded_img[i*16-1] = expanded_img[i*16-1] | b
@@ -118,9 +136,9 @@ function encode(args::Dict)
         expanded_img[i*16-10] = expanded_img[i*16-10] | k
         expanded_img[i*16-11] = expanded_img[i*16-11] | l
         expanded_img[i*16-12] = expanded_img[i*16-12] | m_
-        expanded_img[i*16-10] = expanded_img[i*16-10] | n_
-        expanded_img[i*16-11] = expanded_img[i*16-11] | o
-        expanded_img[i*16-12] = expanded_img[i*16-12] | p
+        expanded_img[i*16-13] = expanded_img[i*16-13] | n_
+        expanded_img[i*16-14] = expanded_img[i*16-14] | o
+        expanded_img[i*16-15] = expanded_img[i*16-15] | p
 
     end
 
@@ -233,17 +251,23 @@ function decode(args::Dict)
     end
 
     #pretty_print(chars)
-
+    char_count = chars[1]
     if( args["out_file"] == nothing )
-        for i in 1:length(chars)
+        for i in 2:length(chars)
             print(Char(chars[i]))
+            if(i > char_count)
+                break
+            end
         end
         println()
     else
         save_file = open(args["out_file"], "w+")
         seek(save_file, 0)
-        for i in 1:length(chars)
+        for i in 2:length(chars)
             write(save_file, Char(chars[i]))
+            if(i > char_count)
+                break
+            end
         end
         flush(save_file)
         println()
