@@ -2,3 +2,7 @@
 *.jpg
 *.gif
 *.txt
+*.pdf
+*.doc
+*.docx
+src/steg_pdf_test.jl
