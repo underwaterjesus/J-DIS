@@ -6,13 +6,13 @@ By the end of this project I hope that the application will be able to hide mult
 In the course of making this application, I might discover that some of the goals are not achievable in th julia language or are above my current ability.<br><br>
 ## Julia Package Dependencies
 J-Dis uses the follwing packages:
-- Images
-- FileIO
-- Printf
-- ArgMacros
-- Suppressor
-- ImageView
-- Gtk.shortnames
+- [Images](https://juliaimages.org/latest/ "JuliaImages")
+- [FileIO](https://github.com/JuliaIO/FileIO.jl "JuliaIO/FileIO")
+- [Printf](https://docs.julialang.org/en/v1/stdlib/Printf/ "Printf")
+- [ArgMacros](https://github.com/zachmatson/ArgMacros.jl "ArgMacros")
+- [Suppressor](https://github.com/JuliaIO/Suppressor.jl "JuliaIO/Suppressor")
+- [ImageView](https://github.com/JuliaImages/ImageView.jl "JuliaImages/ImageView")
+- [Gtk.shortnames](https://github.com/JuliaGraphics/Gtk.jl "JuliaGraphics/Gtk.jl")
 <br><br>
 ## Milestones
 - Hide .txt files in .png files, decode .png files and output .txt (05/09/2020)
