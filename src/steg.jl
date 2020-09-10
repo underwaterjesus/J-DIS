@@ -26,9 +26,9 @@ function pretty_print(x)                        #for nicer testing/debug array p
 end
 
 function get_ext(s)
-    if(s == nothing)
+    if( !(typeof(s) == String) )
         return nothing
-    elseif( length(s) < 5)
+    elseif( length(s) < 5 )
         return nothing
     end
 
@@ -36,6 +36,12 @@ function get_ext(s)
 end
 
 function encode_pdf(args::Dict)
+
+    if( get_ext(args["in_file"]) != ".png" )
+        println("NOT PNG") ## TODO: real error message
+        exit(0)
+    end
+
     if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
         println("NO EXIST") ## TODO: real error message
         exit(0)
@@ -178,12 +184,24 @@ function encode_pdf(args::Dict)
 
         wait(con)
     else
-        save( File(format"PNG", args["out_file"]), out )
+        name = args["out_file"]
+
+        if( get_ext(name) != ".png" )
+            name *= ".png"
+        end
+
+        save( File(format"PNG", name), out )
     end
 
 end
 
 function encode_txt(args::Dict)
+
+    if( get_ext(args["in_file"]) != ".png" )
+        println("NOT PNG") ## TODO: real error message
+        exit(0)
+    end
+
     if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
         println("NO EXIST") ## TODO: real error message
         exit(0)
@@ -349,7 +367,13 @@ function encode_txt(args::Dict)
 
         wait(con)
     else
-        save( File(format"PNG", args["out_file"]), out )
+        name = args["out_file"]
+
+        if( get_ext(name) != ".png" )
+            name *= ".png"
+        end
+
+        save( File(format"PNG", name), out )
     end
 
 end
@@ -362,6 +386,9 @@ function encode_driver(extension::String, args::Dict)
         encode_pdf(args)
     elseif( extension == ".txt" )
         encode_txt(args)
+    else
+        println("Unsupported extension")
+        exit(0)
     end
 end
 
@@ -435,7 +462,14 @@ function decode(args::Dict)
             end
             println()
         else
-            save_file = open(args["out_file"], "w+")
+            file = args["out_file"]
+
+            if(get_ext != ".txt")
+                file *= ".txt"
+            end
+
+            save_file = open(file, "w+")
+
             seek(save_file, 0)
             for i in 2:length(chars)
                 write(save_file, Char(chars[i]))
@@ -444,6 +478,7 @@ function decode(args::Dict)
                 end
             end
             flush(save_file)
+            close(save_file)
             println()
         end
     ################################################################################
@@ -490,7 +525,14 @@ function decode(args::Dict)
         if( args["out_file"] == nothing )
             println(".pdf requires output file")
         else
-            save_file = open(args["out_file"], "w+")
+            file = args["out_file"]
+
+            if(get_ext != ".pdf")
+                file *= ".pdf"
+            end
+
+            save_file = open(file, "w+")
+
             seek(save_file, 0)
             for i in 1:length(chars)
                 write(save_file, chars[i])
@@ -499,6 +541,7 @@ function decode(args::Dict)
                 end
             end
             flush(save_file)
+            close(save_file)
             println()
         end
     ################################################################################
