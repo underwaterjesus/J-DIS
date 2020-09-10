@@ -42,19 +42,37 @@ function encode_pdf(args::Dict)
         exit(0)
     end
 
+    if( get_ext(args["in_file"]) != ".png" )
+        println("NOT PNG") ## TODO: real error message
+        exit(0)
+    end
+
     if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
         println("NO EXIST") ## TODO: real error message
         exit(0)
     end
 
-    #TODO:  -check file extensions
-    #       -handle images other than .png
-
+    ## TODO:  handle images other than .png
+    println("Loading image...")
     img = load( File(format"PNG", args["in_file"]) )
+
+    println("Opening file to be hidden...")
     doc = open( args["hidden"], "r" )
+
+    if( !(isopen( doc )) )
+        println("Unable to access file:  " * args["hidden"])
+        exit(0)
+    end
+
+    if( !(isreadable( doc )) )
+        println("Unable to read file:  " * args["hidden"] * "\nCheck file permissions")
+        exit(0)
+    end
+
     n = size(img)[1]
     m = size(img)[2]
 
+    println("Verifying file sizes...")
     f_size = filesize(doc)
     if( f_size * 4 > ( (3(n * m)) - 17) )
         println("TOO BIG") ## TODO: real error message
@@ -68,6 +86,7 @@ function encode_pdf(args::Dict)
 
     expanded_img = Array{UInt8,1}(undef, 3(n * m))
 
+    println("Reformatting image data...")
     for i in 1:n
         for j in 1:m
 
@@ -86,6 +105,7 @@ function encode_pdf(args::Dict)
 
     #pretty_print(expanded_img)
 
+    println("Reformatting file to be hidden...")
     chars = Array{UInt8,1}(undef, filesize(doc) + 16)
     num_chars = UInt32(0)
     while(!(eof(doc)))
@@ -93,7 +113,7 @@ function encode_pdf(args::Dict)
         global chr = read(doc, UInt8)
         chars[num_chars] = UInt8(chr)
     end
-    println(num_chars)
+    #println(num_chars)
     #pretty_print(chars)
 
     #=
@@ -103,6 +123,7 @@ function encode_pdf(args::Dict)
     d::UInt8  = 0x00
     =#
 
+    println("Embedding file...")
     expanded_img[16] |= UInt8( num_chars & 0x03)
     expanded_img[15] |= UInt8( (num_chars >> 2) & 0x03)
     expanded_img[14] |= UInt8( (num_chars >> 4) & 0x03)
@@ -162,6 +183,7 @@ function encode_pdf(args::Dict)
 
     out = Array{RGB{N0f8},2}(undef, n, m)
 
+    println("Constructing output image...")
     for i in 1:n
         for j in 1:m
             x = ( (i - 1) * m ) + j
@@ -184,6 +206,8 @@ function encode_pdf(args::Dict)
 
         wait(con)
     else
+        println("Saving output...")
+
         name = args["out_file"]
 
         if( get_ext(name) != ".png" )
@@ -191,6 +215,8 @@ function encode_pdf(args::Dict)
         end
 
         save( File(format"PNG", name), out )
+
+        println("\nEmbedding complete.")
     end
 
 end
@@ -207,14 +233,27 @@ function encode_txt(args::Dict)
         exit(0)
     end
 
-    #TODO:  -check file extensions
-    #       -handle images other than .png
-
+    ## TODO:  handle images other than .png
+    println("Loading image...")
     img = load( File(format"PNG", args["in_file"]) )
-    doc = open( args["hidden"], "r" )
-    n = size(img)[1]
-    m = size(img)[2]
 
+    println("Opening file to be hidden...")
+    doc = open( args["hidden"], "r" )
+
+    if( !(isopen( doc )) )
+        println("Unable to access file:  " * args["hidden"])
+        exit(0)
+    end
+
+    if( !(isreadable( doc )) )
+        println("Unable to read file:  " * args["hidden"] * "\nCheck file permissions")
+        exit(0)
+    end
+
+    n = size(img)[1]
+    m = size(img)[2]        ## TODO: handle 1-D images
+
+    println("Verifying file sizes...")
     f_size = filesize(doc)
     if( f_size * 16 > ( (3(n * m)) - 17) )
         println("TOO BIG") ## TODO: real error message
@@ -222,12 +261,12 @@ function encode_txt(args::Dict)
     end
 
     seek(doc, 0)
-    
 
     #pretty_print(img)
 
     expanded_img = Array{UInt8,1}(undef, 3(n * m))
 
+    println("Reformatting image data...")
     for i in 1:n
         for j in 1:m
 
@@ -246,6 +285,7 @@ function encode_txt(args::Dict)
 
     #pretty_print(expanded_img)
 
+    println("Reformatting file to be hidden...")
     chars = Array{UInt32,1}(undef, filesize(doc) + 16)
     num_chars = UInt32(0)
     while(!(eof(doc)))
@@ -253,7 +293,7 @@ function encode_txt(args::Dict)
         global chr = read(doc, Char)
         chars[num_chars] = UInt32(chr)
     end
-    println(num_chars)
+    #println(num_chars)
     #pretty_print(chars)
 
     #=
@@ -263,6 +303,7 @@ function encode_txt(args::Dict)
     d::UInt8  = 0x00
     =#
 
+    println("Embedding file...")
     expanded_img[16] |= UInt8( num_chars & 0x03)
     expanded_img[15] |= UInt8( (num_chars >> 2) & 0x03)
     expanded_img[14] |= UInt8( (num_chars >> 4) & 0x03)
@@ -327,6 +368,7 @@ function encode_txt(args::Dict)
     green = UInt8(0)
     blue = UInt8(0)
 
+
     for i in 1:length(expanded_img)
         global z = ( (i-1)÷3 ) + 1
         global md = i % 3
@@ -345,6 +387,7 @@ function encode_txt(args::Dict)
 
     out = Array{RGB{N0f8},2}(undef, n, m)
 
+    println("Constructing output image...")
     for i in 1:n
         for j in 1:m
             x = ( (i - 1) * m ) + j
@@ -367,6 +410,8 @@ function encode_txt(args::Dict)
 
         wait(con)
     else
+        println("Saving output...")
+
         name = args["out_file"]
 
         if( get_ext(name) != ".png" )
@@ -374,6 +419,8 @@ function encode_txt(args::Dict)
         end
 
         save( File(format"PNG", name), out )
+
+        println("\nEmbedding complete.")
     end
 
 end
@@ -399,6 +446,7 @@ function decode(args::Dict)
         exit(0)
     end
 
+    println("Loading image...")
     img = load( File(format"PNG", args["in_file"]) )
     n = size(img)[1]
     m = size(img)[2]
@@ -407,6 +455,7 @@ function decode(args::Dict)
 
     expanded_img = Array{UInt8,1}(undef, 3(n * m))
 
+    println("Reformatting image data...")
     for i in 1:n
         for j in 1:m
 
@@ -419,6 +468,7 @@ function decode(args::Dict)
         end
     end
 
+    println("Determing extension of hidden file...")
     file_type = expanded_img[length(expanded_img)]
     file_type &= 0x03
 
@@ -426,6 +476,7 @@ function decode(args::Dict)
     ################################################################################
         chars = zeros(UInt32, length(expanded_img) ÷ 16)
 
+        println("Extracting file...")
         for i in 1:length(chars)
 
             x = UInt32(0)
@@ -462,9 +513,11 @@ function decode(args::Dict)
             end
             println()
         else
+            println("Saving file...")
+
             file = args["out_file"]
 
-            if(get_ext != ".txt")
+            if(get_ext(file) != ".txt")
                 file *= ".txt"
             end
 
@@ -480,6 +533,7 @@ function decode(args::Dict)
             flush(save_file)
             close(save_file)
             println()
+            println("Deocoding complete.")
         end
     ################################################################################
     elseif(file_type == 0x01)
@@ -508,6 +562,7 @@ function decode(args::Dict)
         char_count|= ( UInt32( expanded_img[2] ) & 0x03 ) << 28
         char_count|= ( UInt32( expanded_img[1] ) & 0x03 ) << 30
     
+        println("Extracting file...")
         for i in 5:length(chars)
     
             x = UInt8(0)
@@ -525,9 +580,11 @@ function decode(args::Dict)
         if( args["out_file"] == nothing )
             println(".pdf requires output file")
         else
+            println("Saving file...")
+
             file = args["out_file"]
 
-            if(get_ext != ".pdf")
+            if(get_ext(file) != ".pdf")
                 file *= ".pdf"
             end
 
@@ -543,6 +600,7 @@ function decode(args::Dict)
             flush(save_file)
             close(save_file)
             println()
+            println("Deocoding complete.")
         end
     ################################################################################
     elseif(file_type == 0x03)
@@ -586,6 +644,7 @@ function validate_args(args::Dict)
 
 end
 
+println("Reading command line options...")
 flags = parse_args()
 
 if(!( validate_args(flags) ))
@@ -593,8 +652,9 @@ if(!( validate_args(flags) ))
     exit(0)
 end
 
+println("Validating given files...")
 s = get_ext(flags["hidden"])
-println(s)
+#println(s)
 
 if(flags["decode"])
     decode(flags)
