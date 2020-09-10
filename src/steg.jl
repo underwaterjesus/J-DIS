@@ -38,21 +38,24 @@ end
 function encode_pdf(args::Dict)
 
     if( get_ext(args["in_file"]) != ".png" )
-        println("NOT PNG") ## TODO: real error message
-        exit(0)
-    end
-
-    if( get_ext(args["in_file"]) != ".png" )
-        println("NOT PNG") ## TODO: real error message
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unsupported file type:\n", color=:red) 
+        println("    steg.jl currently only supports embedding files in \".png\" image files")
+        close(io)
         exit(0)
     end
 
     if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
-        println("NO EXIST") ## TODO: real error message
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-File not found:\n", color=:red) 
+        println("    Either the input image or file to be embedded could not be located")
+        close(io)
         exit(0)
     end
 
-    ## TODO:  handle images other than .png
+    ## TODO:    -handle images other than .png
+    ##          -handle file permission issues
+
     println("Loading image...")
     img = load( File(format"PNG", args["in_file"]) )
 
@@ -60,12 +63,10 @@ function encode_pdf(args::Dict)
     doc = open( args["hidden"], "r" )
 
     if( !(isopen( doc )) )
-        println("Unable to access file:  " * args["hidden"])
-        exit(0)
-    end
-
-    if( !(isreadable( doc )) )
-        println("Unable to read file:  " * args["hidden"] * "\nCheck file permissions")
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+        println("    File \"" * args["hiddden"] * "\" could not be accessed")
+        close(io)
         exit(0)
     end
 
@@ -75,7 +76,10 @@ function encode_pdf(args::Dict)
     println("Verifying file sizes...")
     f_size = filesize(doc)
     if( f_size * 4 > ( (3(n * m)) - 17) )
-        println("TOO BIG") ## TODO: real error message
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-File too large:\n", color=:red) 
+        println("    \"" * args["in_file"] * "\" is too small to hide \"" * args["hidden"] * "\"")
+        close(io)
         exit(0)
     end
 
@@ -224,16 +228,23 @@ end
 function encode_txt(args::Dict)
 
     if( get_ext(args["in_file"]) != ".png" )
-        println("NOT PNG") ## TODO: real error message
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unsupported file type:\n", color=:red) 
+        println("    steg.jl currently only supports embedding files in \".png\" image files")
+        close(io)
         exit(0)
     end
 
     if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
-        println("NO EXIST") ## TODO: real error message
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-File not found:\n", color=:red) 
+        println("    Either the input image or file to be embedded could not be located")
+        close(io)
         exit(0)
     end
 
-    ## TODO:  handle images other than .png
+    ## TODO:    -handle images other than .png
+    ##          -handle file permission issues
     println("Loading image...")
     img = load( File(format"PNG", args["in_file"]) )
 
@@ -241,12 +252,10 @@ function encode_txt(args::Dict)
     doc = open( args["hidden"], "r" )
 
     if( !(isopen( doc )) )
-        println("Unable to access file:  " * args["hidden"])
-        exit(0)
-    end
-
-    if( !(isreadable( doc )) )
-        println("Unable to read file:  " * args["hidden"] * "\nCheck file permissions")
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+        println("    File \"" * args["hiddden"] * "\" could not be accessed")
+        close(io)
         exit(0)
     end
 
@@ -256,7 +265,10 @@ function encode_txt(args::Dict)
     println("Verifying file sizes...")
     f_size = filesize(doc)
     if( f_size * 16 > ( (3(n * m)) - 17) )
-        println("TOO BIG") ## TODO: real error message
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-File too large:\n", color=:red) 
+        println("    \"" * args["in_file"] * "\" is too small to hide \"" * args["hidden"] * "\"")
+        close(io)
         exit(0)
     end
 
@@ -427,14 +439,20 @@ end
 
 function encode_driver(extension::String, args::Dict)
     if(extension == nothing)
-        println("file has no extension")
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Invalid file extension:\n", color=:red) 
+        println("    Unable to determine file extension for \"" * args["hiddden"] * "\"")
+        close(io)
         exit(0)
     elseif( extension == ".pdf")
         encode_pdf(args)
     elseif( extension == ".txt" )
         encode_txt(args)
     else
-        println("Unsupported extension")
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unsupported file type:\n", color=:red) 
+        println("    steg.jl does not support embedding files of type \"" * extension * "\"")
+        close(io)
         exit(0)
     end
 end
@@ -442,7 +460,10 @@ end
 function decode(args::Dict)
 
     if( !( isfile(args["in_file"]) ) )
-        println("NO EXIST") ## TODO: real error message
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-File not found:\n", color=:red) 
+        println("    Unable to find \"" * args["in_file"] * "\"")
+        close(io)
         exit(0)
     end
 
@@ -648,7 +669,10 @@ println("Reading command line options...")
 flags = parse_args()
 
 if(!( validate_args(flags) ))
-    println("INVALID OPTIONS") #TODO: better error message
+    io = IOContext(stdout, :color => true)
+    printstyled(io, "\nERROR-Invalid or conflicting options:\n", color=:red) 
+    println("    Use the --help flag for usage instructions")
+    close(io)
     exit(0)
 end
 
