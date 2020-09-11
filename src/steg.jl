@@ -634,6 +634,8 @@ function parse_args()#::Dict{Symbol,Any}
 
     @beginarguments begin
 
+        @helpusage "steg.jl input_file [file_to_hide] [-o output_file] {-e|-d}"
+        @helpdescription "\tinput_file:   file in which to embedd file_to_hide or from which to extract a hidden file. This is chosen by use of the -e or -d flag.\n\tfile_to_hide: this file will be hidden in input_file. Required when using -e. Must be omitted when using -d.\n\toutput_file:  if present this will be the name of the output file. The program will automatically append the correct extension if it is incorrect or omitted. File output to console if option omitted.\n\t-e:           indicates that the application is to run in \"embed\" mode. Not to be used with -d option, but one must be present.\n\t-d:           indicates that the application is to run in \"extract\" mode. Not to be used with -e option, but one must be present."
         @argumentflag encode "-e"
         @argumentflag decode "-d"
         @argumentoptional String out_file "-o"
@@ -665,9 +667,9 @@ function validate_args(args::Dict)
 
 end
 
-println("Reading command line options...")
 flags = parse_args()
 
+println("Reading command line options...")
 if(!( validate_args(flags) ))
     io = IOContext(stdout, :color => true)
     printstyled(io, "\nERROR-Invalid or conflicting options:\n", color=:red) 
