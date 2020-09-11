@@ -18,3 +18,4 @@ J-Dis uses the follwing packages:
 - Hide .txt files in .png files, decode .png files and output .txt (05/09/2020)
 - Application supports Unicode encoding/decoding (06/09/2020)
 - Support for .pdf file encoding added (10/09/2020)
+- Support for .doc(x) and .zip encoding (11/09/2020)

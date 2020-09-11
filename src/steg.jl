@@ -32,10 +32,18 @@ function get_ext(s)
         return nothing
     end
 
-    return s[length(s) - 3 : length(s)]
+    dots = findall(c->c == '.', s)
+
+    if(length(dots) == 0)
+        return nothing
+    end
+
+    ret = s[dots[length(dots)] : length(s)]
+
+    return length(ret) > 1 ? ret : nothing
 end
 
-function encode_pdf(args::Dict)
+function encode_uint8(args::Dict)
 
     if( get_ext(args["in_file"]) != ".png" )
         io = IOContext(stdout, :color => true)
@@ -160,7 +168,14 @@ function encode_pdf(args::Dict)
     end
 
     expanded_img[length(expanded_img)] &= 0xfc
-    expanded_img[length(expanded_img)] |= 0x02
+    ext = get_ext(args["hidden"])
+    if(ext == ".doc" || ext == ".docx")
+        expanded_img[length(expanded_img)] |= 0x01
+    elseif(ext == ".pdf")
+        expanded_img[length(expanded_img)] |= 0x02
+    elseif(ext == ".zip")
+        expanded_img[length(expanded_img)] |= 0x03
+    end
 
     #pretty_print(expanded_img)
 
@@ -444,8 +459,8 @@ function encode_driver(extension::String, args::Dict)
         println("    Unable to determine file extension for \"" * args["hiddden"] * "\"")
         close(io)
         exit(0)
-    elseif( extension == ".pdf")
-        encode_pdf(args)
+    elseif( extension == ".pdf" || extension == ".doc" || extension == ".docx" || extension == ".mp3" || extension == ".zip")
+        encode_uint8(args)
     elseif( extension == ".txt" )
         encode_txt(args)
     else
@@ -556,10 +571,7 @@ function decode(args::Dict)
             println()
             println("Deocoding complete.")
         end
-    ################################################################################
-    elseif(file_type == 0x01)
-    
-    elseif(file_type == 0x02)
+    else
     ################################################################################
         chars = zeros(UInt8, length(expanded_img) ÷ 4)
 
@@ -601,22 +613,31 @@ function decode(args::Dict)
         if( args["out_file"] == nothing )
             println(".pdf requires output file")
         else
+            ext = ""
+            if( file_type == 0x01 )
+                ext = ".docx"
+            elseif( file_type == 0x02)
+                ext = ".pdf"
+            elseif( file_type == 0x3 )
+                ext = ".zip"
+        end
+
             println("Saving file...")
 
             file = args["out_file"]
 
-            if(get_ext(file) != ".pdf")
-                file *= ".pdf"
+            if(get_ext(file) != ext)
+                file *= ext
             end
 
             save_file = open(file, "w+")
 
             seek(save_file, 0)
             for i in 1:length(chars)
-                write(save_file, chars[i])
                 if(i > char_count)
                     break
                 end
+                write(save_file, chars[i])
             end
             flush(save_file)
             close(save_file)
@@ -624,8 +645,6 @@ function decode(args::Dict)
             println("Deocoding complete.")
         end
     ################################################################################
-    elseif(file_type == 0x03)
-
     end
 
 end
