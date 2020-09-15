@@ -11,8 +11,6 @@ J-Dis uses the follwing packages:
 - [Printf](https://docs.julialang.org/en/v1/stdlib/Printf/ "Printf")
 - [ArgMacros](https://github.com/zachmatson/ArgMacros.jl "ArgMacros")
 - [Suppressor](https://github.com/JuliaIO/Suppressor.jl "JuliaIO/Suppressor")
-- [ImageView](https://github.com/JuliaImages/ImageView.jl "JuliaImages/ImageView")
-- [Gtk.shortnames](https://github.com/JuliaGraphics/Gtk.jl "JuliaGraphics/Gtk.jl")
 <br><br>
 ## Milestones
 - Hide .txt files in .png files, decode .png files and output .txt (05/09/2020)

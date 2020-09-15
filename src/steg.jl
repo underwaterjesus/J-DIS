@@ -1,8 +1,10 @@
 using Images, FileIO, Printf, ArgMacros, Suppressor
 
+#=
 @suppress begin
     using ImageView, Gtk.ShortNames             #suppress Gtk warnings on Windows machines
 end
+=#
 
 function pretty_print(x)                        #for nicer testing/debug array printing
 
@@ -211,32 +213,17 @@ function encode_uint8(args::Dict)
     end
 
     #pretty_print(out)
+    println("Saving output...")
 
-    if( args["out_file"] == nothing )
-        guidict = imshow(out)
+    name = args["out_file"]
 
-        con = Condition()
-
-        win = guidict["gui"]["window"]
-
-        signal_connect(win, :destroy) do widget
-            notify(con)
-        end
-
-        wait(con)
-    else
-        println("Saving output...")
-
-        name = args["out_file"]
-
-        if( get_ext(name) != ".png" )
-            name *= ".png"
-        end
-
-        save( File(format"PNG", name), out )
-
-        println("\nEmbedding complete.")
+    if( get_ext(name) != ".png" )
+        name *= ".png"
     end
+
+    save( File(format"PNG", name), out )
+
+    println("\nEmbedding complete.")
 
 end
 
@@ -423,32 +410,17 @@ function encode_txt(args::Dict)
     end
 
     #pretty_print(out)
+    println("Saving output...")
 
-    if( args["out_file"] == nothing )
-        guidict = imshow(out)
+    name = args["out_file"]
 
-        con = Condition()
-
-        win = guidict["gui"]["window"]
-
-        signal_connect(win, :destroy) do widget
-            notify(con)
-        end
-
-        wait(con)
-    else
-        println("Saving output...")
-
-        name = args["out_file"]
-
-        if( get_ext(name) != ".png" )
-            name *= ".png"
-        end
-
-        save( File(format"PNG", name), out )
-
-        println("\nEmbedding complete.")
+    if( get_ext(name) != ".png" )
+        name *= ".png"
     end
+
+    save( File(format"PNG", name), out )
+
+    println("\nEmbedding complete.")
 
 end
 
@@ -540,37 +512,27 @@ function decode(args::Dict)
 
         #pretty_print(chars)
         char_count = chars[1]
-        if( args["out_file"] == nothing )
-            for i in 2:length(chars)
-                print(Char(chars[i]))
-                if(i > char_count)
-                    break
-                end
-            end
-            println()
-        else
-            println("Saving file...")
+        println("Saving file...")
 
-            file = args["out_file"]
+        file = args["out_file"]
 
-            if(get_ext(file) != ".txt")
-                file *= ".txt"
-            end
-
-            save_file = open(file, "w+")
-
-            seek(save_file, 0)
-            for i in 2:length(chars)
-                write(save_file, Char(chars[i]))
-                if(i > char_count)
-                    break
-                end
-            end
-            flush(save_file)
-            close(save_file)
-            println()
-            println("Deocoding complete.")
+        if(get_ext(file) != ".txt")
+            file *= ".txt"
         end
+
+        save_file = open(file, "w+")
+
+        seek(save_file, 0)
+        for i in 2:length(chars)
+            write(save_file, Char(chars[i]))
+            if(i > char_count)
+                break
+            end
+        end
+        flush(save_file)
+        close(save_file)
+        println()
+        println("Decoding complete.")
     else
     ################################################################################
         chars = zeros(UInt8, length(expanded_img) ÷ 4)
@@ -610,40 +572,36 @@ function decode(args::Dict)
         end
     
         #pretty_print(chars)
-        if( args["out_file"] == nothing )
-            println(".pdf requires output file")
-        else
-            ext = ""
-            if( file_type == 0x01 )
-                ext = ".docx"
-            elseif( file_type == 0x02)
-                ext = ".pdf"
-            elseif( file_type == 0x3 )
-                ext = ".zip"
+        println("Saving file...")
+
+        ext = ""
+        if( file_type == 0x01 )
+            ext = ".docx"
+        elseif( file_type == 0x02)
+            ext = ".pdf"
+        elseif( file_type == 0x3 )
+            ext = ".zip"
         end
 
-            println("Saving file...")
+        file = args["out_file"]
 
-            file = args["out_file"]
-
-            if(get_ext(file) != ext)
-                file *= ext
-            end
-
-            save_file = open(file, "w+")
-
-            seek(save_file, 0)
-            for i in 1:length(chars)
-                if(i > char_count)
-                    break
-                end
-                write(save_file, chars[i])
-            end
-            flush(save_file)
-            close(save_file)
-            println()
-            println("Deocoding complete.")
+        if(get_ext(file) != ext)
+            file *= ext
         end
+
+        save_file = open(file, "w+")
+
+        seek(save_file, 0)
+        for i in 1:length(chars)
+            if(i > char_count)
+                break
+            end
+            write(save_file, chars[i])
+        end
+        flush(save_file)
+        close(save_file)
+        println()
+        println("Decoding complete.")
     ################################################################################
     end
 
@@ -657,7 +615,7 @@ function parse_args()#::Dict{Symbol,Any}
         @helpdescription "\tinput_file:   file in which to embedd file_to_hide or from which to extract a hidden file. This is chosen by use of the -e or -d flag.\n\tfile_to_hide: this file will be hidden in input_file. Required when using -e. Must be omitted when using -d.\n\toutput_file:  if present this will be the name of the output file. The program will automatically append the correct extension if it is incorrect or omitted. File output to console if option omitted.\n\t-e:           indicates that the application is to run in \"embed\" mode. Not to be used with -d option, but one must be present.\n\t-d:           indicates that the application is to run in \"extract\" mode. Not to be used with -e option, but one must be present."
         @argumentflag encode "-e"
         @argumentflag decode "-d"
-        @argumentoptional String out_file "-o"
+        @argumentrequired String out_file "-o"
         @positionalrequired String in_file
         @positionaloptional String hidden
 
@@ -679,6 +637,10 @@ function validate_args(args::Dict)
     end
 
     if( (args["decode"]) && (args["hidden"] != nothing) )
+        return false
+    end
+
+    if( (args["out_file"] == nothing) )
         return false
     end
 
