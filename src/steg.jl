@@ -47,35 +47,70 @@ end
 
 function encode_uint8(args::Dict)
 
-    if( get_ext(args["in_file"]) != ".png" )
+    in_ext = get_ext(args["in_file"])
+
+    if( in_ext != ".png" && in_ext != ".jpg" && in_ext != ".jpeg" )
         io = IOContext(stdout, :color => true)
         printstyled(io, "\nERROR-Unsupported file type:\n", color=:red) 
-        println("    steg.jl currently only supports embedding files in \".png\" image files")
+        println("    steg.jl currently only supports embedding files in \".png\" \".jpg/.jpeg\" image files")
         close(io)
         exit(0)
     end
 
-    if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
-        io = IOContext(stdout, :color => true)
-        printstyled(io, "\nERROR-File not found:\n", color=:red) 
-        println("    Either the input image or file to be embedded could not be located")
-        close(io)
-        exit(0)
-    end
-
-    ## TODO:    -handle images other than .png
-    ##          -handle file permission issues
-
-    println("Loading image...")
-    img = load( File(format"PNG", args["in_file"]) )
-
-    println("Opening file to be hidden...")
-    doc = open( args["hidden"], "r" )
-
-    if( !(isopen( doc )) )
+    try
+        if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-File not found:\n", color=:red) 
+            println("    Either the input image or file to be embedded could not be located")
+            close(io)
+            exit(0)
+        end
+    catch
         io = IOContext(stdout, :color => true)
         printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
-        println("    File \"" * args["hiddden"] * "\" could not be accessed")
+        println("    Either file \"" * args["in_file"] * "\" or \"" * args["hidden"] * "\" could not be accessed.\n    Check files exist and you have the correct permissions.")
+        close(io)
+        exit(0)
+    end
+
+    println("Loading image...")
+    if( in_ext == ".png" )
+        try
+            global img = load( File(format"PNG", args["in_file"]) )
+        catch
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+            println("    File \"" * args["in_file"] * "\" could not be accessed.\n    Check file exists and you have the correct permissions.")
+            close(io)
+            exit(0)
+        end
+    else
+        try
+            global img = load( File(format"JPEG", args["in_file"]) )
+        catch
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+            println("    File \"" * args["in_file"] * "\" could not be accessed.\n    Check file exists and you have the correct permissions.")
+            close(io)
+            exit(0)
+        end
+    end
+
+    println("Opening file to be hidden...")
+
+    try
+        global doc = open( args["hidden"], "r" )
+        if( !(isopen( doc )) )
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+            println("    File \"" * args["hidden"] * "\" could not be accessed")
+            close(io)
+            exit(0)
+        end
+    catch
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+        println("    File \"" * args["hidden"] * "\" could not be accessed.\n    Check file exists and you have the correct permissions.")
         close(io)
         exit(0)
     end
@@ -215,48 +250,100 @@ function encode_uint8(args::Dict)
     #pretty_print(out)
     println("Saving output...")
 
-    name = args["out_file"]
+    try
+        global name = args["out_file"]
 
-    if( get_ext(name) != ".png" )
-        name *= ".png"
+        if( get_ext(name) != ".png" )
+            name *= ".png"
+        end
+
+        save( File(format"PNG", name), out )
+
+        if( !(isreadable( open(name) )) )
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to write to output file:\n", color=:red) 
+            println("    Unable to write to file \"" * name * "\"\n    If file already exists, check you have the correct permissions\n    If not, check the filename is valid on your system")
+            close(io)
+            exit(0)
+        end
+
+        println("\nEmbedding complete.")
+    catch
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unable to write to output file:\n", color=:red) 
+        println("    Unable to write to file \"" * name * "\"\n    If file already exists, check you have the correct permissions\n    If not, check the filename is valid on your system")
+        close(io)
+        exit(0)
     end
-
-    save( File(format"PNG", name), out )
-
-    println("\nEmbedding complete.")
 
 end
 
 function encode_txt(args::Dict)
 
-    if( get_ext(args["in_file"]) != ".png" )
+    in_ext = get_ext( args["in_file"] )
+
+    if( in_ext != ".png" && in_ext != ".jpg" && in_ext != ".jpeg" )
         io = IOContext(stdout, :color => true)
         printstyled(io, "\nERROR-Unsupported file type:\n", color=:red) 
-        println("    steg.jl currently only supports embedding files in \".png\" image files")
+        println("    steg.jl currently only supports embedding files in \".png\" and \".jpg/jpeg\" image files")
         close(io)
         exit(0)
     end
 
-    if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
+    try
+        if( !( isfile(args["in_file"]) ) || !( isfile(args["hidden"]) ) )
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-File not found:\n", color=:red) 
+            println("    Either the input image or file to be embedded could not be located")
+            close(io)
+            exit(0)
+        end
+    catch
         io = IOContext(stdout, :color => true)
         printstyled(io, "\nERROR-File not found:\n", color=:red) 
-        println("    Either the input image or file to be embedded could not be located")
+        println("    Either file \"" * args["in_file"] * "\" or \"" * args["hidden"] * "\" could not be accessed.\n    Check files exist and you have the correct permissions.")
         close(io)
         exit(0)
     end
 
-    ## TODO:    -handle images other than .png
-    ##          -handle file permission issues
     println("Loading image...")
-    img = load( File(format"PNG", args["in_file"]) )
+    if( in_ext == ".png" )
+        try
+            global img = load( File(format"PNG", args["in_file"]) )
+        catch
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+            println("    File \"" * args["in_file"] * "\" could not be accessed.\n    Check file exists and you have the correct permissions.")
+            close(io)
+            exit(0)
+        end
+    else
+        try
+            global img = load( File(format"JPEG", args["in_file"]) )
+        catch
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+            println("    File \"" * args["in_file"] * "\" could not be accessed.\n    Check file exists and you have the correct permissions.")
+            close(io)
+            exit(0)
+        end
+    end
 
     println("Opening file to be hidden...")
-    doc = open( args["hidden"], "r" )
 
-    if( !(isopen( doc )) )
+    try
+        global doc = open( args["hidden"], "r" )
+        if( !(isopen( doc )) )
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+            println("    File \"" * args["hidden"] * "\" could not be accessed")
+            close(io)
+            exit(0)
+        end
+    catch
         io = IOContext(stdout, :color => true)
         printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
-        println("    File \"" * args["hiddden"] * "\" could not be accessed")
+        println("    File \"" * args["hidden"] * "\" could not be accessed.\n    Check file exists and you have the correct permissions.")
         close(io)
         exit(0)
     end
@@ -411,16 +498,31 @@ function encode_txt(args::Dict)
 
     #pretty_print(out)
     println("Saving output...")
+    try
+        global name = args["out_file"]
 
-    name = args["out_file"]
+        if( get_ext(name) != ".png" )
+            name *= ".png"
+        end
 
-    if( get_ext(name) != ".png" )
-        name *= ".png"
+        save( File(format"PNG", name), out )
+
+        if( !(isreadable( open(name) )) )
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to write to output file:\n", color=:red) 
+            println("    Unable to write to file \"" * name * "\"\n    If file already exists, check you have the correct permissions\n    If not, check the filename is valid on your system")
+            close(io)
+            exit(0)
+        end
+
+        println("\nEmbedding complete.")
+    catch
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unable to write to output file:\n", color=:red) 
+        println("    Unable to write to file \"" * name * "\"\n    If file already exists, check you have the correct permissions\n    If not, check the filename is valid on your system")
+        close(io)
+        exit(0)
     end
-
-    save( File(format"PNG", name), out )
-
-    println("\nEmbedding complete.")
 
 end
 
@@ -428,7 +530,7 @@ function encode_driver(extension::String, args::Dict)
     if(extension == nothing)
         io = IOContext(stdout, :color => true)
         printstyled(io, "\nERROR-Invalid file extension:\n", color=:red) 
-        println("    Unable to determine file extension for \"" * args["hiddden"] * "\"")
+        println("    Unable to determine file extension for \"" * args["hidden"] * "\"")
         close(io)
         exit(0)
     elseif( extension == ".pdf" || extension == ".doc" || extension == ".docx" || extension == ".mp3" || extension == ".zip")
@@ -446,16 +548,56 @@ end
 
 function decode(args::Dict)
 
-    if( !( isfile(args["in_file"]) ) )
+    in_ext = get_ext( args["in_file"] )
+
+    if( in_ext != ".png" && in_ext != ".jpg" && in_ext != ".jpeg" )
+        io = IOContext(stdout, :color => true)
+        printstyled(io, "\nERROR-Unsupported file type:\n", color=:red) 
+        println("    steg.jl currently only supports embedding files in \".png\" image files")
+        close(io)
+        exit(0)
+    end
+
+    try
+        if( !( isfile(args["in_file"]) ) )
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-File not found:\n", color=:red) 
+            println("    Unable to find \"" * args["in_file"] * "\"")
+            close(io)
+            exit(0)
+        end
+    catch
         io = IOContext(stdout, :color => true)
         printstyled(io, "\nERROR-File not found:\n", color=:red) 
-        println("    Unable to find \"" * args["in_file"] * "\"")
+        println("    Unable to access file \"" * args["in_file"] * "\"\n    Check file exists and you have the correct permissions.")
         close(io)
         exit(0)
     end
 
     println("Loading image...")
-    img = load( File(format"PNG", args["in_file"]) )
+    
+    if( in_ext == ".png" )
+        try
+        global img = load( File(format"PNG", args["in_file"]) )
+        catch
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+            println("    File \"" * args["in_file"] * "\" could not be accessed.\n    Check file exists and you have the correct permissions.")
+            close(io)
+            exit(0)
+        end
+    else
+        try
+            global img = load( File(format"JPEG", args["in_file"]) )
+        catch
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to access file:\n", color=:red) 
+            println("    File \"" * args["in_file"] * "\" could not be accessed.\n    Check file exists and you have the correct permissions.")
+            close(io)
+            exit(0)
+        end
+    end
+
     n = size(img)[1]
     m = size(img)[2]
 
@@ -520,19 +662,27 @@ function decode(args::Dict)
             file *= ".txt"
         end
 
-        save_file = open(file, "w+")
+        try
+            save_file = open(file, "w+")
 
-        seek(save_file, 0)
-        for i in 2:length(chars)
-            write(save_file, Char(chars[i]))
-            if(i > char_count)
-                break
+            seek(save_file, 0)
+            for i in 2:length(chars)
+                write(save_file, Char(chars[i]))
+                if(i > char_count)
+                    break
+                end
             end
+            flush(save_file)
+            close(save_file)
+            println()
+            println("Decoding complete.")
+        catch
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to write to output file:\n", color=:red) 
+            println("    Unable to write to file \"" * args["out_file"] * "\"\n    If file already exists, check you have the correct permissions\n    If not, check the filename is valid on your system")
+            close(io)
+            exit(0)
         end
-        flush(save_file)
-        close(save_file)
-        println()
-        println("Decoding complete.")
     else
     ################################################################################
         chars = zeros(UInt8, length(expanded_img) ÷ 4)
@@ -589,19 +739,26 @@ function decode(args::Dict)
             file *= ext
         end
 
-        save_file = open(file, "w+")
-
-        seek(save_file, 0)
-        for i in 1:length(chars)
-            if(i > char_count)
-                break
+        try
+            save_file = open(file, "w+")
+            seek(save_file, 0)
+            for i in 1:length(chars)
+                if(i > char_count)
+                    break
+                end
+                write(save_file, chars[i])
             end
-            write(save_file, chars[i])
+            flush(save_file)
+            close(save_file)
+            println()
+            println("Decoding complete.")
+        catch
+            io = IOContext(stdout, :color => true)
+            printstyled(io, "\nERROR-Unable to write to output file:\n", color=:red) 
+            println("    Unable to write to file \"" * args["out_file"] * "\"\n    If file already exists, check you have the correct permissions\n    If not, check the filename is valid on your system")
+            close(io)
+            exit(0)
         end
-        flush(save_file)
-        close(save_file)
-        println()
-        println("Decoding complete.")
     ################################################################################
     end
 
