@@ -1,19 +1,28 @@
 # J-DIS
-Julia Digital Image Steganography is a julia application that uses Least Significant Bit Steganography to hide files in digital images.<br><br>
-The purpose of this project is to become more familiar with the julia programming language in a fun and interesting way, as my final year project in university will be primarily written in julia. Because this is just a fun project to further other goals long term support is unlikely, but hopefully others find it intersesting and useful too.<br><br>
-## Goals
-By the end of this project I hope that the application will be able to hide multiple file types - ideally .txt, .pdf, .zip, and any of the main digital image extensions - in each of the major digital image types - .png, .jpg, .gif, .bmp and .tiff.<br><br>
-In the course of making this application, I might discover that some of the goals are not achievable in th julia language or are above my current ability.<br><br>
+Julia Digital Image Steganography is a Julia application that uses Least Significant Bit Steganography to hide files in digital images.<br><br>
+The purpose of this project is to become more familiar with the Julia programming language in a fun and interesting way, as my final year project in university will be primarily written in Julia. Because this is just a fun project to further other goals long term support is unlikely, but hopefully others find it intersesting and useful too.<br><br>
+- [Overview](#overview "Overview")
+- [Dependencies](#julia-package-dependencies "Julia Package Dependencies")
+- [Future Versions](#future-versions-/-current-issues "Future Versions / Current Issues")
+- [Tutorial](#how-to-use-J-DIS "How To Use J-DIS")
+<br><br>
+
+## Overview
+J-DIS is a steganography application capable of hiding .txt, .doc/.docx, .pdf and .zip files in .png and .jpg/.jpeg images. It does this by embedding the file data in the two least significant bits of a number of bytes in an image. The program can decode these files again, automatically determining the type of file that was originally hidden.<br><br>
+J-DIS consists of only one file, which is run from the command line. It is not a Julia module and does not export any functions or macros. A tutorial on how to use J-DIS is given below.<br><br>
+
 ## Julia Package Dependencies
-J-Dis uses the follwing packages:
+J-DIS uses the follwing packages:
 - [Images](https://juliaimages.org/latest/ "JuliaImages")
 - [FileIO](https://github.com/JuliaIO/FileIO.jl "JuliaIO/FileIO")
 - [Printf](https://docs.julialang.org/en/v1/stdlib/Printf/ "Printf")
 - [ArgMacros](https://github.com/zachmatson/ArgMacros.jl "ArgMacros")
 - [Suppressor](https://github.com/JuliaIO/Suppressor.jl "JuliaIO/Suppressor")
 <br><br>
-## Milestones
-- Hide .txt files in .png files, decode .png files and output .txt (05/09/2020)
-- Application supports Unicode encoding/decoding (06/09/2020)
-- Support for .pdf file encoding added (10/09/2020)
-- Support for .doc(x) and .zip encoding (11/09/2020)
+
+## Future Versions / Current Issues
+Currently J-DIS only works with two dimensional images. An image that is a single rowor column of pixels will crash the program. This should hopefully be rectified in the near future.<br><br>
+J-DIS can only embed files in .png and .jpg/.jpeg files, and always produces a .png as output when embedding files. More image types may be supported as input/output files in the future.<br><br>
+
+## How To Use J-DIS
+**TUTORIAL AND HELPFUL SCREENSHOTS COMING VERY SOON**
