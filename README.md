@@ -3,8 +3,8 @@ Julia Digital Image Steganography is a Julia application that uses Least Signifi
 The purpose of this project is to become more familiar with the Julia programming language in a fun and interesting way, as my final year project in university will be primarily written in Julia. Because this is just a fun project to further other goals long term support is unlikely, but hopefully others find it intersesting and useful too.<br><br>
 - [Overview](#overview "Overview")
 - [Dependencies](#julia-package-dependencies "Julia Package Dependencies")
-- [Future Versions](#future-versions-/-current-issues "Future Versions / Current Issues")
-- [Tutorial](#how-to-use-J-DIS "How To Use J-DIS")
+- [Future Versions](#future-versions--current-issues "Future Versions / Current Issues")
+- [Tutorial](#how-to-use-j-dis "How To Use J-DIS")
 <br><br>
 
 ## Overview
