@@ -1,4 +1,7 @@
-# J-DIS
+<p align="center">
+<img src="img/j_dis.png" title="J-DIS Logo">
+<h1 align="center">J-DIS</h1>
+</p>
 <p align="justify">
 Julia Digital Image Steganography is a Julia application that uses Least Significant Bit Steganography to hide files in digital images.
 </p>
