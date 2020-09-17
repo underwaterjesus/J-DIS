@@ -17,7 +17,7 @@ The purpose of this project is to become more familiar with the Julia programmin
 <p align="justify">
 J-DIS is a steganography application capable of hiding .txt, .doc/.docx, .pdf and .zip files in .png and .jpg/.jpeg images. It does this by embedding the file data in the two least significant bits of a number of bytes in an image. The program can decode these files again, automatically determining the type of file that was originally hidden.
 </p>
-<p>
+<p align="justify">
 J-DIS consists of only one file, which is run from the command line. It is not a Julia module and does not export any functions or macros. A tutorial on how to use J-DIS is given below.
 </p><br>
 
@@ -34,7 +34,7 @@ J-DIS uses the follwing packages:
 <p align="justify">
 Currently J-DIS only works with two dimensional images. An image that is a single row or column of pixels will crash the program. This should hopefully be rectified in the near future.
 </p>
-<p>
+<p align="justify">
 J-DIS can only embed files in .png and .jpg/.jpeg files, and always produces a .png as output when embedding files. More image types may be supported as input/output files in the future.
 </p>  
 <br>
