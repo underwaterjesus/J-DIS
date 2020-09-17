@@ -2,7 +2,7 @@
 <p align="justify">
 Julia Digital Image Steganography is a Julia application that uses Least Significant Bit Steganography to hide files in digital images.
 </p>
-<p>
+<p align="justify">
 The purpose of this project is to become more familiar with the Julia programming language in a fun and interesting way, as my final year project in university will be primarily written in Julia. Because this is just a fun project to further other goals long term support is unlikely, but hopefully others find it intersesting and useful too.
 <ul>
 <li><a href="#overview" title="Overview">Overview</a></li>
@@ -43,16 +43,13 @@ J-DIS can only embed files in .png and .jpg/.jpeg files, and always produces a .
 <p align="justify">
 To use J-DIS you must have Julia installed and working. Make sure all the necessary packages(see the <a href="#julia-package-dependencies" title="Julia Package Dependencies">dependencies</a> section) have been installed. This can be done by opening the Julia REPL and using the <a href="https://docs.julialang.org/en/v1/stdlib/Pkg/" title="Pkg Documentation">Pkg</a> package manager. The following commands will add the necessary packages when entered in the REPL:
 </p>
-<p>
-<pre><code>
-julia>using Pkg
+<pre><code>julia>using Pkg
 julia>Pkg.add("Images")
 julia>Pkg.add("FileIO")
 julia>Pkg.add("Printf")
 julia>Pkg.add("ArgMacros")
 julia>Pkg.add("Suppressor")
 </code></pre>
-</p>
 <br>
 <p align="justify">
 Your Julia environment should now be ready to run J-DIS. The following steps and images demonstrate how to run the program.
