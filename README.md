@@ -72,7 +72,7 @@ J-DIS can be run in two modes; encode mode and decode mode. These are indicated 
 
 <b>Decode Mode</b>
 <ol start="5">
-<li>The name of the image which contains the hidden file.You do not have to overwrite this image with the output image. This will only happen if argument number three is the same filename as this argument.</li>
+<li>The name of the image which contains the hidden file. You do not have to overwrite this image with the output image. This will only happen if argument number six is the same filename as this argument.</li>
 <li>The <i>-o</i> flag. This the name of the output image. You do not need to specify the extension of this file, the program will append the extension for you if it is omitted or incorrect. This means that it is not necessary to know the type of file hidden before you extract it.</li>
 <li>The <i>-d</i> flag. This indicates you wish to use the decode mode. This shoudl not be used with the <i>-e</i> flag from point number 4.</li>
 </ol>
